@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react'
-import {Row, Col, Table} from 'react-bootstrap'
+import {Row, Col, Table, Button} from 'react-bootstrap'
 
 const PostPage = () => {
     const [list, setList]=useState([]);
-    const[loading, setLoading]=useState(false);
+    const [loading, setLoading]=useState(false);
+    const [page, setPage]=useState(1);
+    const [last, setLast]=useState(1);
 
     const getPosts = () => {
         setLoading(true);
@@ -11,14 +13,18 @@ const PostPage = () => {
             .then(response => response.json())
             .then(json => {
                 console.log(json);
-                setList(json);
+                let start=(page-1)*10+1;
+                let end=(page*10);
+
+                setList(json.filter(post=>post.id>=start && post.id<=end));
+                setLast(Math.ceil(json.length/10));
                 setLoading(false);
             })
     }
 
     useEffect(() => {
         getPosts();
-    },[]);
+    },[page]);
 
     if(loading) return <h1 className='text-center my-5'>로딩 중...</h1>
     return (
@@ -41,6 +47,15 @@ const PostPage = () => {
                         )}
                     </tbody>
                 </Table>
+                <div className='text-center mx-3'>
+                    <Button 
+                    disabled={page===1 && true}
+                    onClick={()=>setPage(page-1)}>이전</Button>
+                    <span className='px-3'>{page} / {last}</span>
+                    <Button 
+                    disabled={page===last && true}
+                    onClick={()=>setPage(page+1)}>다음</Button>
+                </div>
             </Col>
         </Row>
     )
